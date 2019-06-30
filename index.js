@@ -1,7 +1,6 @@
 class Node {
   constructor() {
     this._updateListeners = [];
-    this._emitListeners = {};
   }
 
   get() {
@@ -18,24 +17,8 @@ class Node {
     }
   }
 
-  emit(eventName, ...args) {
-    if (this._emitListeners[eventName] !== undefined) {
-      for (const listener of this._emitListeners[eventName]) {
-        listener.apply(null, args);
-      }
-    }
-  }
-
   onUpdate(callback) {
     this._updateListeners.push(callback);
-  }
-
-  onEmit(eventName, callback) {
-    if (this._emitListeners[eventName] === undefined) {
-      this._emitListeners[eventName] = [];
-    }
-
-    this._emitListeners[eventName].push(callback);
   }
 }
 
