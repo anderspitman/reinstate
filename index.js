@@ -77,7 +77,7 @@ class ArrayNode extends Node {
     console.log(this._value);
 
     for (const callback of this._pushCallbacks) {
-      callback(reinElem);
+      callback(reinElem, this._value.length - 1);
     }
   }
 
@@ -112,24 +112,8 @@ function getConstructor(obj) {
 }
 
 function fromObject(obj) {
-  if (obj instanceof Array) {
-    return new ArrayNode(obj);
-  }
-  else if (typeof obj === 'number') {
-    return new NumberNode(obj);
-  }
-  else if (typeof obj === 'boolean') {
-    return new BoolNode(obj);
-  }
-  else if (typeof obj === 'string') {
-    return new StringNode(obj);
-  }
-  else if (typeof obj === 'object') {
-    return new ObjectNode(obj);
-  }
-  else {
-    throw new Error("Invalid type: " + typeof obj)
-  }
+  const Con = getConstructor(obj);
+  return new Con(obj);
 }
 
 export { fromObject };

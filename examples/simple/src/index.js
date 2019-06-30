@@ -29,7 +29,7 @@ function List(state) {
   const listElems = h('.list-elements',
     state.map((elemState, i) => {
       return h('.list__element',
-        createElem(elemState),
+        createElem(elemState, i),
       );
     })
   );
@@ -39,20 +39,20 @@ function List(state) {
     AppendButton(state),
   );
 
-  state.onPush((elemState) => {
+  state.onPush((elemState, index) => {
     listElems.appendChild(h('.list__element',
-      createElem(elemState),
+      createElem(elemState, index),
     ));
   });
 
-  function createElem(elemState) {
+  function createElem(elemState, index) {
     const listElem = ListElem(elemState);
 
     listElem.addEventListener('selected', () => {
       dom.dispatchEvent(new CustomEvent('elem-clicked', {
         bubbles: true,
         detail: {
-          index: i,
+          index,
         },
       }));
     });
