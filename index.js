@@ -27,7 +27,6 @@ class ObjectNode extends Node {
     super();
 
     for (const name in obj) {
-      console.log(name);
       this[name] = fromObject(obj[name]);
     }
   }
@@ -58,10 +57,14 @@ class ArrayNode extends Node {
   constructor(value) {
     super();
 
+    this._pushCallbacks = [];
+
     const values = [];
 
+    this._ItemConstructor = getConstructor(value[0]);
+
     for (const elem of value) {
-      const child = fromObject(elem);
+      const child = new this._ItemConstructor(elem);
       values.push(child);
     }
 
@@ -69,11 +72,42 @@ class ArrayNode extends Node {
   }
 
   push(elem) {
-    this._values.push(elem);
+    const reinElem = new this._ItemConstructor(elem);
+    this._value.push(reinElem);
+    console.log(this._value);
+
+    for (const callback of this._pushCallbacks) {
+      callback(reinElem);
+    }
   }
 
   map(func) {
     return this._value.map(func);
+  }
+
+  onPush(callback) {
+    this._pushCallbacks.push(callback);
+  }
+}
+
+function getConstructor(obj) {
+  if (obj instanceof Array) {
+    return ArrayNode;
+  }
+  else if (typeof obj === 'number') {
+    return NumberNode;
+  }
+  else if (typeof obj === 'boolean') {
+    return BoolNode;
+  }
+  else if (typeof obj === 'string') {
+    return StringNode;
+  }
+  else if (typeof obj === 'object') {
+    return ObjectNode;
+  }
+  else {
+    throw new Error("Invalid type: " + typeof obj)
   }
 }
 

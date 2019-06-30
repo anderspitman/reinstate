@@ -2,37 +2,18 @@ import { fromObject } from 'rein-state';
 import h from 'hyperscript';
 
 
-function SimpleComponent(state) {
-  const elem = h('div.myclass');
-  return elem;
-}
-
-function MyComponent(state) {
+function Main(state) {
 
   const valElem = h('div.val', state.val.get());
 
-  const dom = h('div.my-class',
+  const dom = h('.main',
     {
       onclick: () => {
         state.val.set(state.val.get() + 1);
       },
     },
     valElem,
-    state.list.map((elemState, i) => {
-
-      const listElem = ListElem(elemState);
-
-      listElem.addEventListener('selected', () => {
-        dom.dispatchEvent(new CustomEvent('elem-clicked', {
-          bubbles: true,
-          detail: {
-            index: i,
-          },
-        }));
-      });
-
-      return listElem;
-    }),
+    List(state.list), 
   );
 
   state.val.onUpdate((val) => {
@@ -43,9 +24,49 @@ function MyComponent(state) {
 }
 
 
+function List(state) {
+
+  const listElems = h('.list-elements',
+    state.map((elemState, i) => {
+      return h('.list__element',
+        createElem(elemState),
+      );
+    })
+  );
+
+  const dom = h('.list',
+    listElems,
+    AppendButton(state),
+  );
+
+  state.onPush((elemState) => {
+    listElems.appendChild(h('.list__element',
+      createElem(elemState),
+    ));
+  });
+
+  function createElem(elemState) {
+    const listElem = ListElem(elemState);
+
+    listElem.addEventListener('selected', () => {
+      dom.dispatchEvent(new CustomEvent('elem-clicked', {
+        bubbles: true,
+        detail: {
+          index: i,
+        },
+      }));
+    });
+
+    return listElem;
+  }
+
+  return dom;
+}
+
+
 function ListElem(state) {
 
-  const dom = h('div',
+  const dom = h('.list-element',
     state.value.get(),
   );
 
@@ -55,6 +76,17 @@ function ListElem(state) {
 
   return dom;
 }
+
+function AppendButton(state) {
+  return h('button', 
+    {
+      onclick: () => {
+        state.push({ value: 8, selected: false });
+      },
+    },
+    "Append"
+  );
+};
 
 
 const state = fromObject({
@@ -69,7 +101,7 @@ const state = fromObject({
 //console.log(JSON.stringify(state, null, 2));
 
 const root = document.getElementById('root');
-root.appendChild(MyComponent(state));
+root.appendChild(Main(state));
 
 root.addEventListener('elem-clicked', (e) => {
   console.log("item clicked:", e.detail.index);
