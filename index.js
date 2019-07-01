@@ -74,7 +74,6 @@ class ArrayNode extends Node {
   push(elem) {
     const reinElem = new this._ItemConstructor(elem);
     this._value.push(reinElem);
-    console.log(this._value);
 
     for (const callback of this._pushCallbacks) {
       callback(reinElem, this._value.length - 1);
