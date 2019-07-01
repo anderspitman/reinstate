@@ -12,7 +12,5 @@
   "devDependencies": {
     "esm": "^3.2.25"
   },
-  "dependencies": {
-    "hyperscript": "^2.0.2"
-  }
+  "dependencies": {}
 }
