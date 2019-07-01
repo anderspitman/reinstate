@@ -27,19 +27,32 @@ function Main(state) {
 function List(state) {
 
   const listElems = h('.list-elements',
-    state.map((elemState, i) => {
+    state.values.map((elemState, i) => {
       return h('.list__element',
         createElem(elemState, i),
       );
     })
   );
 
+  state.text.set("Default value");
+
+  const textInput = h('input.list__text-input',
+    {
+      type: 'text',
+      value: "Default value",
+      onkeyup: (e) => {
+        state.text.set(e.target.value);
+      },
+    }
+  );
+
   const dom = h('.list',
     listElems,
+    textInput,
     AppendButton(state),
   );
 
-  state.onPush((elemState, index) => {
+  state.values.onPush((elemState, index) => {
     listElems.appendChild(h('.list__element',
       createElem(elemState, index),
     ));
@@ -81,7 +94,8 @@ function AppendButton(state) {
   return h('button', 
     {
       onclick: () => {
-        state.push({ value: 8, selected: false });
+        console.log("text", state.text);
+        state.values.push({ value: state.text.get(), selected: false });
       },
     },
     "Append"
@@ -92,10 +106,13 @@ function AppendButton(state) {
 const state = fromObject({
   val: 5,
   s: "is texty",
-  list: [
-    { value: 1, selected: false },
-    { value: 2, selected: true },
-  ],
+  list: {
+    text: null,
+    values: [
+      { value: 1, selected: false },
+      { value: 2, selected: true },
+    ]
+  },
 });
 
 //console.log(JSON.stringify(state, null, 2));
