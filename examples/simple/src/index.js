@@ -27,8 +27,8 @@ function Main(state) {
 function List(state) {
 
   const listElems = h('.list-elements',
-    state.values.map((elemState, i) => {
-      return createElem(elemState, i);
+    state.values.map((elemState) => {
+      return createElem(elemState);
     })
   );
 
@@ -45,21 +45,30 @@ function List(state) {
   );
 
   const dom = h('.list',
-    listElems,
     textInput,
+    listElems,
     AppendButton(state),
   );
 
   state.values.onPush((elemState, index) => {
-    listElems.appendChild(createElem(elemState, index));
+    listElems.appendChild(createElem(elemState));
+  });
+
+  state.values.onInsert((elemState, index) => {
+    console.log(listElems.childNodes);
+    listElems.insertBefore(createElem(elemState), listElems.childNodes[index + 1]);
   });
 
   let selectedElem = null;
 
-  function createElem(elemState, index) {
+  function createElem(elemState) {
     const listElem = ListElem(elemState);
 
-    listElem.addEventListener('selected', () => {
+    listElem.addEventListener('selected', (e) => {
+
+      const index = Array.prototype.indexOf.call(listElems.children, e.target.parentNode);
+
+      console.log("item selected:", index);
 
       if (selectedElem !== null) {
         selectedElem.classList.remove('list__element--selected');
@@ -68,12 +77,13 @@ function List(state) {
       selectedElem = listElem;
       listElem.classList.add('list__element--selected');
 
-      dom.dispatchEvent(new CustomEvent('elem-clicked', {
-        bubbles: true,
-        detail: {
-          index,
-        },
-      }));
+      dom.dispatchEvent(new Event('elem-clicked'));
+    });
+
+    listElem.addEventListener('insert-after', (e) => {
+      const index = Array.prototype.indexOf.call(listElems.children, e.target.parentNode);
+      console.log("insert after", index);
+      state.values.insert(index, { value: state.text.get(), selected: false });
     });
 
     return h('.list__element',
@@ -89,6 +99,15 @@ function ListElem(state) {
 
   const dom = h('.list-element',
     state.value.get(),
+    h('button.list-element__insert-after-btn',
+      {
+        onclick: (e) => {
+          e.stopPropagation();
+          dom.dispatchEvent(new Event('insert-after'));
+        },
+      },
+      "Insert After",
+    )
   );
 
   dom.addEventListener('click', () => {

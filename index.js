@@ -58,6 +58,7 @@ class ArrayNode extends Node {
     super();
 
     this._pushCallbacks = [];
+    this._insertCallbacks = [];
 
     const values = [];
 
@@ -80,12 +81,25 @@ class ArrayNode extends Node {
     }
   }
 
+  insert(index, elem) {
+    const reinElem = new this._ItemConstructor(elem);
+    this._value.splice(index, 0, reinElem);
+
+    for (const callback of this._insertCallbacks) {
+      callback(reinElem, index);
+    }
+  }
+
   map(func) {
     return this._value.map(func);
   }
 
   onPush(callback) {
     this._pushCallbacks.push(callback);
+  }
+
+  onInsert(callback) {
+    this._insertCallbacks.push(callback);
   }
 }
 
