@@ -59,6 +59,7 @@ class ArrayNode extends Node {
 
     this._pushCallbacks = [];
     this._insertCallbacks = [];
+    this._removeCallbacks = [];
 
     const values = [];
 
@@ -90,6 +91,18 @@ class ArrayNode extends Node {
     }
   }
 
+  remove(index) {
+    this._value.splice(index, 1);
+
+    const elem = this._value[index];
+
+    for (const callback of this._removeCallbacks) {
+      callback(index);
+    }
+    
+    return elem;
+  }
+
   map(func) {
     return this._value.map(func);
   }
@@ -100,6 +113,10 @@ class ArrayNode extends Node {
 
   onInsert(callback) {
     this._insertCallbacks.push(callback);
+  }
+
+  onRemove(callback) {
+    this._removeCallbacks.push(callback);
   }
 }
 

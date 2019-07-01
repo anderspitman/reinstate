@@ -55,8 +55,11 @@ function List(state) {
   });
 
   state.values.onInsert((elemState, index) => {
-    console.log(listElems.childNodes);
     listElems.insertBefore(createElem(elemState), listElems.childNodes[index + 1]);
+  });
+
+  state.values.onRemove((index) => {
+    listElems.removeChild(listElems.childNodes[index]);
   });
 
   let selectedElem = null;
@@ -86,6 +89,13 @@ function List(state) {
       state.values.insert(index, { value: state.text.get(), selected: false });
     });
 
+    listElem.addEventListener('remove', (e) => {
+      const index = Array.prototype.indexOf.call(listElems.children, e.target.parentNode);
+      console.log("remove", index);
+      const removedState = state.values.remove(index);
+      console.log(removedState);
+    });
+
     return h('.list__element',
       listElem,
     );
@@ -107,7 +117,16 @@ function ListElem(state) {
         },
       },
       "Insert After",
-    )
+    ),
+    h('button.list-element__remove-btn',
+      {
+        onclick: (e) => {
+          e.stopPropagation();
+          dom.dispatchEvent(new Event('remove'));
+        },
+      },
+      "Remove",
+    ),
   );
 
   dom.addEventListener('click', () => {
