@@ -4,7 +4,7 @@ import h from 'hyperscript';
 
 function Main(state) {
 
-  const valElem = h('div.val', state.val.get());
+  const valElem = h('h1.val', state.val.get());
 
   const dom = h('.main',
     {
@@ -28,9 +28,7 @@ function List(state) {
 
   const listElems = h('.list-elements',
     state.values.map((elemState, i) => {
-      return h('.list__element',
-        createElem(elemState, i),
-      );
+      return createElem(elemState, i);
     })
   );
 
@@ -53,9 +51,7 @@ function List(state) {
   );
 
   state.values.onPush((elemState, index) => {
-    listElems.appendChild(h('.list__element',
-      createElem(elemState, index),
-    ));
+    listElems.appendChild(createElem(elemState, index));
   });
 
   let selectedElem = null;
@@ -80,7 +76,9 @@ function List(state) {
       }));
     });
 
-    return listElem;
+    return h('.list__element',
+      listElem,
+    );
   }
 
   return dom;
