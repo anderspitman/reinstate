@@ -9,11 +9,14 @@ class Node {
 
   set(value) {
 
-    this._value = value;
+    // TODO: should probably test this to make sure the check is valid
+    if (value !== this._value) {
 
-    // TODO: only notify if value is different
-    for (const listener of this._updateListeners) {
-      listener(value);
+      this._value = value;
+
+      for (const listener of this._updateListeners) {
+        listener(value);
+      }
     }
   }
 
