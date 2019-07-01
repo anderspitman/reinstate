@@ -58,10 +58,20 @@ function List(state) {
     ));
   });
 
+  let selectedElem = null;
+
   function createElem(elemState, index) {
     const listElem = ListElem(elemState);
 
     listElem.addEventListener('selected', () => {
+
+      if (selectedElem !== null) {
+        selectedElem.classList.remove('list__element--selected');
+      }
+
+      selectedElem = listElem;
+      listElem.classList.add('list__element--selected');
+
       dom.dispatchEvent(new CustomEvent('elem-clicked', {
         bubbles: true,
         detail: {
@@ -94,7 +104,6 @@ function AppendButton(state) {
   return h('button', 
     {
       onclick: () => {
-        console.log("text", state.text);
         state.values.push({ value: state.text.get(), selected: false });
       },
     },
