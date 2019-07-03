@@ -1,66 +1,34 @@
-class Node {
-  constructor() {
-    this._updateListeners = [];
-  }
-
-  get() {
-    return this._value;
-  }
-
-  set(value) {
-
-    // TODO: This should possibly take objects and conver them to the rein
-    // format.
-    // TODO: should probably test this to make sure the check is valid
-    if (value !== this._value) {
-
-      this._value = value;
-
-      for (const listener of this._updateListeners) {
-        listener(value);
-      }
-    }
-  }
-
-  onUpdate(callback) {
-    this._updateListeners.push(callback);
-  }
-}
-
-class ObjectNode extends Node {
+class ObjectNode {
   constructor(obj) {
-    super();
+
+    this._updateListeners = {};
 
     for (const name in obj) {
       this[name] = fromObject(obj[name]);
     }
   }
-}
 
-class NumberNode extends Node {
-  constructor(value) {
-    super();
-    this.set(value);
+  onUpdate(key, callback) {
+    if (this._updateListeners[key] === undefined) {
+      this._updateListeners[key] = [];
+    }
+
+    this._updateListeners[key].push(callback);
+  }
+
+  notify(key) {
+
+    if (this._updateListeners[key]) {
+      for (const callback of this._updateListeners[key]) {
+        callback(this[key]);
+      }
+    }
   }
 }
 
-class StringNode extends Node {
-  constructor(value) {
-    super();
-    this.set(value);
-  }
-}
 
-class BoolNode extends Node {
+class ArrayNode {
   constructor(value) {
-    super();
-    this.set(value);
-  }
-}
-
-class ArrayNode extends Node {
-  constructor(value) {
-    super();
 
     this._pushCallbacks = [];
     this._insertCallbacks = [];
@@ -68,18 +36,16 @@ class ArrayNode extends Node {
 
     const values = [];
 
-    this._ItemConstructor = getConstructor(value[0]);
-
     for (const elem of value) {
-      const child = new this._ItemConstructor(elem);
+      const child = fromObject(elem);
       values.push(child);
     }
 
-    this.set(values);
+    this._value = values;
   }
 
   push(elem) {
-    const reinElem = new this._ItemConstructor(elem);
+    const reinElem = fromObject(elem);
     this._value.push(reinElem);
 
     for (const callback of this._pushCallbacks) {
@@ -88,7 +54,7 @@ class ArrayNode extends Node {
   }
 
   insert(index, elem) {
-    const reinElem = new this._ItemConstructor(elem);
+    const reinElem = fromObject(elem);
     this._value.splice(index, 0, reinElem);
 
     for (const callback of this._insertCallbacks) {
@@ -125,36 +91,35 @@ class ArrayNode extends Node {
   }
 }
 
-function getConstructor(obj) {
-  if (obj instanceof Array) {
-    return ArrayNode;
-  }
-  else if (typeof obj === 'number') {
-    return NumberNode;
-  }
-  else if (typeof obj === 'boolean') {
-    return BoolNode;
-  }
-  else if (typeof obj === 'string') {
-    return StringNode;
-  }
-  else if (typeof obj === 'object') {
-    return ObjectNode;
-  }
-  else {
-    throw new Error("Invalid type: " + typeof obj)
-  }
-}
 
 function fromObject(obj) {
-  const Con = getConstructor(obj);
-  return new Con(obj);
+
+  if (obj instanceof Array) {
+    return new ArrayNode(obj);
+  }
+  else if (typeof obj === 'object') {
+
+    const reinObj = new ObjectNode(obj);
+    return new Proxy(reinObj, {
+
+      set: function(target, prop, value) {
+        target[prop] = fromObject(value);
+
+        reinObj.notify(prop);
+
+        return true;
+      },
+    });
+  }
+  else {
+    return obj;
+  }
 }
 
 function onUpdated(obj, key, callback) {
   if (obj[key] !== undefined) {
-    if (obj[key].onUpdate) {
-      obj[key].onUpdate(callback);
+    if (obj.onUpdate) {
+      obj.onUpdate(key, callback);
     }
   }
   else {

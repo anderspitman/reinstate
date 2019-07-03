@@ -1,22 +1,22 @@
-import { fromObject } from 'rein-state';
+import rein from 'rein-state';
 import h from 'hyperscript';
 
 
 function Main(state) {
 
-  const valElem = h('h1.val', state.val.get());
+  const valElem = h('h1.val', state.val);
 
   const dom = h('.main',
     {
       onclick: () => {
-        state.val.set(state.val.get() + 1);
+        state.val += 1;
       },
     },
     valElem,
     List(state.list), 
   );
 
-  state.val.onUpdate((val) => {
+  rein.onUpdated(state, 'val', (val) => {
     valElem.innerHTML = val;
   });
 
@@ -32,14 +32,14 @@ function List(state) {
     })
   );
 
-  state.text.set("Default value");
+  state.text = "Default value";
 
   const textInput = h('input.list__text-input',
     {
       type: 'text',
       value: "Default value",
       onkeyup: (e) => {
-        state.text.set(e.target.value);
+        state.text = e.target.value;
       },
     }
   );
@@ -86,7 +86,7 @@ function List(state) {
     listElem.addEventListener('insert-after', (e) => {
       const index = Array.prototype.indexOf.call(listElems.children, e.target.parentNode);
       console.log("insert after", index);
-      state.values.insert(index, { value: state.text.get(), selected: false });
+      state.values.insert(index, { value: state.text, selected: false });
     });
 
     listElem.addEventListener('remove', (e) => {
@@ -108,7 +108,7 @@ function List(state) {
 function ListElem(state) {
 
   const dom = h('.list-element',
-    state.value.get(),
+    state.value,
     h('button.list-element__insert-after-btn',
       {
         onclick: (e) => {
@@ -140,7 +140,7 @@ function AppendButton(state) {
   return h('button', 
     {
       onclick: () => {
-        state.values.push({ value: state.text.get(), selected: false });
+        state.values.push({ value: state.text, selected: false });
       },
     },
     "Append"
@@ -148,7 +148,7 @@ function AppendButton(state) {
 };
 
 
-const state = fromObject({
+const state = rein.fromObject({
   val: 5,
   s: "is texty",
   list: {
@@ -160,6 +160,7 @@ const state = fromObject({
   },
 });
 
+console.log(state);
 //console.log(JSON.stringify(state, null, 2));
 
 const root = document.getElementById('root');
@@ -170,5 +171,5 @@ root.addEventListener('elem-clicked', (e) => {
 });
 
 setTimeout(() => {
-  state.val.set(20);
-}, 3000);
+  state.val = 20;
+}, 1000);
