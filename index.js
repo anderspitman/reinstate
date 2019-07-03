@@ -9,6 +9,8 @@ class Node {
 
   set(value) {
 
+    // TODO: This should possibly take objects and conver them to the rein
+    // format.
     // TODO: should probably test this to make sure the check is valid
     if (value !== this._value) {
 
@@ -149,4 +151,15 @@ function fromObject(obj) {
   return new Con(obj);
 }
 
-export { fromObject };
+function onUpdated(obj, key, callback) {
+  if (obj[key] !== undefined) {
+    if (obj[key].onUpdate) {
+      obj[key].onUpdate(callback);
+    }
+  }
+  else {
+    throw new Error("reinstate.onUpdated: object does not have key " + key);
+  }
+}
+
+export default { fromObject, onUpdated };
