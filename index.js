@@ -107,7 +107,6 @@ function fromObject(obj) {
         if (target[prop] !== value) {
           target[prop] = fromObject(value);
 
-          console.log("notify");
           reinObj.notify(prop);
         }
 
