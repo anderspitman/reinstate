@@ -103,9 +103,13 @@ function fromObject(obj) {
     return new Proxy(reinObj, {
 
       set: function(target, prop, value) {
-        target[prop] = fromObject(value);
 
-        reinObj.notify(prop);
+        if (target[prop] !== value) {
+          target[prop] = fromObject(value);
+
+          console.log("notify");
+          reinObj.notify(prop);
+        }
 
         return true;
       },
