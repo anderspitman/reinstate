@@ -1,12 +1,15 @@
 class ObjectNode {
   constructor(obj) {
 
+    Object.defineProperty(this, '_updateListeners', {
+      enumerable: false,
+      writable: true,
+    });
+      
     this._updateListeners = {};
 
     for (const name in obj) {
-      if (name !== '_updateListeners') {
-        this[name] = fromObject(obj[name]);
-      }
+      this[name] = fromObject(obj[name]);
     }
   }
 
