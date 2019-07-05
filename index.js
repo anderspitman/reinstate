@@ -132,4 +132,10 @@ function onUpdated(obj, key, callback) {
   }
 }
 
-export default { fromObject, onUpdated };
+function onPush(obj, callback) {
+  if (obj.onPush) {
+    obj.onPush(callback);
+  }
+}
+
+export default { fromObject, onUpdated, onPush };
