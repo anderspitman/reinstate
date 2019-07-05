@@ -99,6 +99,10 @@ function fromObject(obj) {
   if (obj instanceof Array) {
     return new ArrayNode(obj);
   }
+  else if (obj === null) {
+    // gets me every time that typeof null === 'object'
+    return obj;
+  }
   else if (typeof obj === 'object') {
 
     const reinObj = new ObjectNode(obj);
