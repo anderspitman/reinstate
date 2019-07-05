@@ -4,7 +4,9 @@ class ObjectNode {
     this._updateListeners = {};
 
     for (const name in obj) {
-      this[name] = fromObject(obj[name]);
+      if (name !== '_updateListeners') {
+        this[name] = fromObject(obj[name]);
+      }
     }
   }
 
