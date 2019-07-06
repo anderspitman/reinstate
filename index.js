@@ -8,6 +8,20 @@ class ObjectNode {
       
     this._updateListeners = {};
 
+    Object.defineProperty(this, '_addListeners', {
+      enumerable: false,
+      writable: true,
+    });
+
+    this._addListeners = [];
+
+    Object.defineProperty(this, '_deleteListeners', {
+      enumerable: false,
+      writable: true,
+    });
+
+    this._deleteListeners = [];
+
     for (const name in obj) {
       this[name] = fromObject(obj[name]);
     }
@@ -19,6 +33,14 @@ class ObjectNode {
     }
 
     this._updateListeners[key].push(callback);
+  }
+
+  onAdd(callback) {
+    this._addListeners.push(callback);
+  }
+
+  onDelete(callback) {
+    this._deleteListeners.push(callback);
   }
 
   notify(key) {
@@ -47,6 +69,10 @@ class ArrayNode {
     }
 
     this._value = values;
+  }
+
+  get length() {
+    return this._value.length;
   }
 
   push(elem) {
@@ -83,6 +109,16 @@ class ArrayNode {
     return this._value.map(func);
   }
 
+  join(ch) {
+    return this._value.join(ch);
+  }
+
+  concat(other) {
+    return this._value.concat(other);
+  }
+
+
+
   onPush(callback) {
     this._pushCallbacks.push(callback);
   }
@@ -100,7 +136,14 @@ class ArrayNode {
 function fromObject(obj) {
 
   if (obj instanceof Array) {
-    return new ArrayNode(obj);
+    const reinObj = new ArrayNode(obj);
+    return new Proxy(reinObj, {
+      get: function(target, prop) {
+        // TODO: probably need to proxy here so we can handle array[elem]
+        // access
+        return target[prop];
+      },
+    });
   }
   else if (obj === null) {
     // gets me every time that typeof null === 'object'
@@ -114,13 +157,43 @@ function fromObject(obj) {
       set: function(target, prop, value) {
 
         if (target[prop] !== value) {
-          target[prop] = fromObject(value);
 
-          reinObj.notify(prop);
+          const newObj = fromObject(value)
+
+          if (target[prop] === undefined) {
+
+            target[prop] = newObj;
+
+            for (const callback of reinObj._addListeners) {
+              callback(prop);
+            }
+          }
+          else {
+
+            target[prop] = newObj;
+
+            reinObj.notify(prop);
+          }
         }
 
         return true;
       },
+
+      deleteProperty: function(target, prop) {
+        if (target[prop] !== undefined) {
+          delete target[prop];
+
+          console.log("actual delete then not");
+
+          for (const callback of reinObj._deleteListeners) {
+            callback(prop);
+          }
+
+          return true;
+        }
+
+        return false;
+      }
     });
   }
   else {
@@ -139,10 +212,22 @@ function onUpdated(obj, key, callback) {
   }
 }
 
+function onAdd(obj, callback) {
+  if (obj.onAdd) {
+    obj.onAdd(callback);
+  }
+}
+
+function onDelete(obj, callback) {
+  if (obj.onDelete) {
+    obj.onDelete(callback);
+  }
+}
+
 function onPush(obj, callback) {
   if (obj.onPush) {
     obj.onPush(callback);
   }
 }
 
-export default { fromObject, onUpdated, onPush };
+export default { fromObject, onAdd, onUpdated, onDelete, onPush };
