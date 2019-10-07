@@ -183,8 +183,6 @@ function fromObject(obj) {
         if (target[prop] !== undefined) {
           delete target[prop];
 
-          console.log("actual delete then not");
-
           for (const callback of reinObj._deleteListeners) {
             callback(prop);
           }
